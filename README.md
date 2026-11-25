@@ -1,13 +1,23 @@
-# Unitex 公司官网
+# Unitex 官网
 
-此仓库托管 Unitex 静态官网，并通过 GitHub Actions 发布到 GitHub Pages。
+公开站点仓库：GitHub Pages + GitHub Actions。
+
+## 页面地址
+
+- 首页：https://cz007.github.io/unitex-website/unitex.html
+- 根网址会从 index.html 自动跳转到 unitex.html
+- 质量页：https://cz007.github.io/unitex-website/quality.html
+
+## 微信分享卡片
+
+工作流为首页和质量页分别写入 Open Graph 标题、描述、规范 URL 和预览图。预览图片由 og-image.webp.b64 解码生成。微信抓取和缓存由微信侧控制，页面元数据配置好后仍需在微信中实际发送链接确认卡片效果。
 
 ## 首页资源
 
-首页来自用户提供的 `Unitex.html`，页面内嵌了图片、字体等资源数据。为适配 GitHub 网页端上传限制，HTML 分成 `site-parts/part-*.txt` 多个文本片段；部署工作流会按文件名顺序拼回 `_site/index.html` 再发布。
+原始 HTML 内嵌图片、字体等数据。为适配网页端上传限制，源文件拆成 site-parts/part-*.txt，工作流会按顺序组装成 unitex.html 和 quality.html。
 
-页面源文件包含 328 个 `__UNITEX_ASSET_n__` 资源标识，由页面内嵌的离线资源脚本解析。这些标识不是缺失资源。
+页面里的 328 个 __UNITEX_ASSET_n__ 标识由内嵌资源脚本解析，并非缺失资源。
 
 ## 发布
 
-仓库 Pages 来源设为 GitHub Actions。推送到 `main` 或从 Actions 手动运行 `Deploy Unitex website to GitHub Pages` 会重新部署。
+仓库 Pages 来源为 GitHub Actions。推送到 main 后自动部署。
