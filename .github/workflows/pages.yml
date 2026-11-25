@@ -25,19 +25,63 @@ jobs:
         uses: actions/checkout@v6
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Assemble site pages
+      - name: Assemble pages and sharing metadata
         run: |
           mkdir -p _site
-          cat site-parts/part-*.txt > _site/index.html
+          cat site-parts/part-*.txt > _site/unitex.html
+          base64 --decode og-image.webp.b64 > _site/og-image.webp
           python3 - <<'PY'
           from pathlib import Path
-          source = Path("_site/index.html")
-          html = source.read_text(encoding="utf-8")
-          needle = "const mainSection = () => here().hash.startsWith('#factory/') ? '#home' : here().hash;"
-          replacement = "const mainSection = () => location.pathname.endsWith('/quality.html') && !here().hash ? '#quality-view' : here().hash.startsWith('#factory/') ? '#home' : here().hash;"
-          if html.count(needle) != 1 or 'id="quality-view"' not in html:
-              raise SystemExit("Expected Unitex quality view routing was not found exactly once")
-          Path("_site/quality.html").write_text(html.replace(needle, replacement), encoding="utf-8")
+          import re
+
+          site = Path("_site")
+          source = (site / "unitex.html").read_text(encoding="utf-8")
+          route = "const mainSection = () => here().hash.startsWith('#factory/') ? '#home' : here().hash;"
+          quality_route = "const mainSection = () => location.pathname.endswith('/quality.html') && !here().hash ? '#quality-view' : here().hash.startsWith('#factory/') ? '#home' : here().hash;"
+          if source.count(route) != 1 or 'id="quality-view"' not in source:
+              raise SystemExit("Expected Unitex quality route was not found exactly once")
+
+          def add_social_metadata(page, title, description, url):
+              page = re.sub(r"<title>.*?</title>", f"<title>{title}</title>", page, count=1, flags=re.S)
+              page = re.sub(r'<meta name="description" content="[^"]*">',
+                            f'<meta name="description" content="{description}">', page, count=1)
+              block = f'''<link rel="canonical" href="{url}">
+          <meta property="og:type" content="website">
+          <meta property="og:site_name" content="UNITEX">
+          <meta property="og:title" content="{title}">
+          <meta property="og:description" content="{description}">
+          <meta property="og:url" content="{url}">
+          <meta property="og:image" content="https://cz007.github.io/unitex-website/og-image.webp">
+          <meta property="og:image:secure_url" content="https://cz007.github.io/unitex-website/og-image.webp">
+          <meta property="og:image:type" content="image/webp">
+          <meta property="og:image:width" content="1536">
+          <meta property="og:image:height" content="1024">
+          <meta property="og:image:alt" content="Unitex apparel manufacturing">
+          <meta name="twitter:card" content="summary_large_image">
+          <meta name="twitter:title" content="{title}">
+          <meta name="twitter:description" content="{description}">
+          <meta name="twitter:image" content="https://cz007.github.io/unitex-website/og-image.webp">'''
+              return page.replace("</head>", block + "\n</head>", 1)
+
+          home_url = "https://cz007.github.io/unitex-website/unitex.html"
+          quality_url = "https://cz007.github.io/unitex-website/quality.html"
+          home_title = "Unitex | Apparel Development &amp; Global Manufacturing"
+          home_description = "Apparel development and manufacturing across China, Cambodia, Vietnam, Myanmar and Kenya."
+          quality_title = "Quality | Unitex Apparel Development &amp; Global Manufacturing"
+          quality_description = "Quality through every production stage, from incoming materials to final inspection and release."
+
+          home = add_social_metadata(source, home_title, home_description, home_url)
+          quality = add_social_metadata(source.replace(route, quality_route, 1),
+                                        quality_title, quality_description, quality_url)
+          (site / "unitex.html").write_text(home, encoding="utf-8")
+          (site / "quality.html").write_text(quality, encoding="utf-8")
+
+          redirect = '''<!doctype html>
+          <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta http-equiv="refresh" content="0;url=unitex.html"><link rel="canonical" href="unitex.html">
+          <title>Unitex</title><script>location.replace('unitex.html'+location.search+location.hash);</script></head>
+          <body><a href="unitex.html">Unitex company website</a></body></html>'''
+          (site / "index.html").write_text(redirect, encoding="utf-8")
           PY
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v4
