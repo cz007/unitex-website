@@ -4,9 +4,9 @@ Unitex 静态网站，通过 GitHub Pages 发布。
 
 ## 页面地址
 
-- [首页](https://cz007.github.io/unitex-website/unitex.html)
-- [质量页](https://cz007.github.io/unitex-website/quality.html)
-- [网站根网址](https://cz007.github.io/unitex-website/) 会跳转到首页。
+- [首页](https://unitex-group.github.io/unitex-website/unitex.html)
+- [质量页](https://unitex-group.github.io/unitex-website/quality.html)
+- [网站根网址](https://unitex-group.github.io/unitex-website/) 会跳转到首页。
 
 ## 网站文件
 
